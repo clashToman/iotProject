@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Soil Monitor Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+</head>
+<body class="bg-black min-h-screen p-6">
+  <h1 class="text-2xl font-bold text-center text-green-500 mb-6">Real-Time Soil Environment Monitoring</h1>
+
+  <!-- Soil and Crop Type -->
+  <div class="flex flex-col md:flex-row justify-center items-center gap-8 mb-8">
+    <div>
+      <label for="soil-type" class="text-white mr-2 text-lg font-medium">Soil Type:</label>
+      <select id="soil-type" class="p-2 rounded-md bg-gray-800 text-white border border-gray-600">
+        <option value="Sandy">Sandy</option>
+        <option value="Loamy">Loamy</option>
+        <option value="Clay">Clay</option>
+        <option value="Peaty">Peaty</option>
+        <option value="Silty">Silty</option>
+        <option value="Chalky">Chalky</option>
+      </select>
+    </div>
+    <div>
+      <label for="crop-type" class="text-white mr-2 text-lg font-medium">Crop Type:</label>
+      <select id="crop-type" class="p-2 rounded-md bg-gray-800 text-white border border-gray-600">
+        <option value="Wheat">Wheat</option>
+        <option value="Rice">Rice</option>
+        <option value="Corn">Corn</option>
+        <option value="Soybean">Soybean</option>
+        <option value="Potato">Potato</option>
+        <option value="Tomato">Tomato</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Sensor Cards -->
+  <div id="sensor-cards" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="bg-gray-800 p-4 rounded-lg shadow-md text-center">
+      <h2 class="text-lg font-semibold text-gray-500">Temperature (°C)</h2>
+      <p id="temperature" class="text-4xl font-bold text-red-500 mb-2">--</p>
+      <div id="temperature-chart"></div>
+    </div>
+    <div class="bg-gray-800 p-4 rounded-lg shadow-md text-center">
+      <h2 class="text-lg font-semibold text-gray-500">Humidity (%)</h2>
+      <p id="humidity" class="text-4xl font-bold text-blue-500 mb-2">--</p>
+      <div id="humidity-chart"></div>
+    </div>
+    <div class="bg-gray-800 p-4 rounded-lg shadow-md text-center">
+      <h2 class="text-lg font-semibold text-gray-500">Soil Moisture (%)</h2>
+      <p id="moisture" class="text-4xl font-bold text-green-500 mb-2">--</p>
+      <div id="moisture-chart"></div>
+    </div>
+    <div class="bg-gray-800 p-4 rounded-lg shadow-md text-center">
+      <h2 class="text-lg font-semibold text-gray-500">Nitrogen (%)</h2>
+      <p id="nitrogen" class="text-4xl font-bold text-blue-500 mb-2">--</p>
+      <div id="nitrogen-chart"></div>
+    </div>
+    <div class="bg-gray-800 p-4 rounded-lg shadow-md text-center">
+      <h2 class="text-lg font-semibold text-gray-500">Phosphorus (%)</h2>
+      <p id="phosphorus" class="text-4xl font-bold text-blue-500 mb-2">--</p>
+      <div id="phosphorus-chart"></div>
+    </div>
+    <div class="bg-gray-800 p-4 rounded-lg shadow-md text-center">
+      <h2 class="text-lg font-semibold text-gray-500">Potassium (%)</h2>
+      <p id="potassium" class="text-4xl font-bold text-blue-500 mb-2">--</p>
+      <div id="potassium-chart"></div>
+    </div>
+  </div>
+
+  <!-- Recommendation Button -->
+  <div class="mt-10 flex justify-center">
+    <button id="recommendBtn" class="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+      <img id="loaderGif" src="image/Animation - 1745305370442.gif" class="w-10 h-10 hidden" alt="Loading...">
+      <span id="btnText">Get Recommendation</span>
+    </button>
+  </div>
+
+  <!-- Result Display -->
+  <p id="fertilizer-result" class="text-xl text-green-400 mt-6 text-center"></p>
+
+  <!-- JS Logic -->
+  <script>
+    const btn = document.getElementById("recommendBtn");
+    const loaderGif = document.getElementById("loaderGif");
+    const btnText = document.getElementById("btnText");
+
+    btn.addEventListener("click", async () => {
+      btn.disabled = true;
+      loaderGif.classList.remove("hidden");
+      btnText.classList.add("hidden");
+
+      const temperature = parseFloat(document.getElementById("temperature").textContent);
+      const humidity = parseFloat(document.getElementById("humidity").textContent);
+      const moisture = parseFloat(document.getElementById("moisture").textContent);
+      const nitrogen = parseFloat(document.getElementById("nitrogen").textContent);
+      const phosphorus = parseFloat(document.getElementById("phosphorus").textContent);
+      const potassium = parseFloat(document.getElementById("potassium").textContent);
+      const soilType = document.getElementById("soil-type").value;
+      const cropType = document.getElementById("crop-type").value;
+
+      try {
+        const response = await fetch("http://127.0.0.1:8000/predict", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            temperature,
+            humidity,
+            moisture,
+            soil_type: soilType,
+            crop_type: cropType,
+            nitrogen,
+            potassium,
+            phosphorous: phosphorus
+          })
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("API error:", errorText);
+          throw new Error("API returned non-200 status");
+        }
+
+        const result = await response.json();
+        document.getElementById("fertilizer-result").textContent = `🌱 Recommended Fertilizer: ${result.recommended_fertilizer}`;
+        loaderGif.classList.add("hidden");
+        btnText.classList.remove("hidden");
+        btnText.textContent = "Recommended!";
+        btn.classList.remove("bg-blue-600");
+        btn.classList.add("bg-green-600");
+        btn.disabled = true;
+      } catch (error) {
+        console.error("Error:", error);
+        alert("❌ Failed to get recommendation. Please try again.");
+        loaderGif.classList.add("hidden");
+        btnText.classList.remove("hidden");
+        btn.disabled = false;
+      }
+    });
+
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDBO34dEU5kPKpLByTa0uCgqaOQaZK3i2M",
+      authDomain: "iot-project-64bf3.firebaseapp.com",
+      databaseURL: "https://iot-project-64bf3-default-rtdb.firebaseio.com",
+      projectId: "iot-project-64bf3",
+      storageBucket: "iot-project-64bf3.firebasestorage.app",
+      messagingSenderId: "396893046939",
+      appId: "1:396893046939:web:ea98300b7fc8f1f3451e3e"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const tempData = [], humidityData = [], moistureData = [], Nitrogen = [], Potassium = [], Phosphorus = [];
+
+    function createChart(id, color, dataArray) {
+      return new ApexCharts(document.querySelector(id), {
+        chart: {
+          type: 'area',
+          height: 100,
+          sparkline: { enabled: true },
+          animations: { enabled: true, easing: 'linear', dynamicAnimation: { speed: 300 } }
+        },
+        stroke: { curve: 'smooth', width: 2 },
+        fill: {
+          opacity: 0.3,
+          type: 'gradient',
+          gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.1, stops: [0, 90, 100] }
+        },
+        tooltip: { enabled: false },
+        colors: [color],
+        series: [{ data: dataArray }]
+      });
+    }
+
+    const charts = {
+      temperature: createChart("#temperature-chart", "#EF4444", tempData),
+      humidity: createChart("#humidity-chart", "#3B82F6", humidityData),
+      moisture: createChart("#moisture-chart", "#10B981", moistureData),
+      nitrogen: createChart("#nitrogen-chart", "#03fca5", Nitrogen),
+      phosphorus: createChart("#phosphorus-chart", "#10B981", Phosphorus),
+      potassium: createChart("#potassium-chart", "#10B981", Potassium)
+    };
+
+    Object.values(charts).forEach(chart => chart.render());
+
+    function debounce(fn, delay) {
+      let timer;
+      return function (...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn.apply(this, args), delay);
+      };
+    }
+
+    function listen(path, elementId, dataArray, chartKey) {
+      const updateUI = debounce((val) => {
+        if (val === null) return;
+        document.getElementById(elementId).textContent = val;
+        dataArray.push(val);
+        if (dataArray.length > 20) dataArray.shift();
+        charts[chartKey].updateSeries([{ data: dataArray }]);
+      }, 500);
+
+      db.ref(path).on("value", snapshot => {
+        const val = snapshot.val();
+        updateUI(val);
+      });
+    }
+
+    listen("/iot/temperature", "temperature", tempData, "temperature");
+    listen("/iot/humidity", "humidity", humidityData, "humidity");
+    listen("/iot/moisture", "moisture", moistureData, "moisture");
+    listen("/iot/nitrogen", "nitrogen", Nitrogen, "nitrogen");
+    listen("/iot/phosphorus", "phosphorus", Phosphorus, "phosphorus");
+    listen("/iot/potassium", "potassium", Potassium, "potassium");
+  </script>
+</body>
+</html>
