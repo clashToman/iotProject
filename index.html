@@ -17,57 +17,61 @@
     <div>
       <label for="soil-type" class="text-white mr-2 text-lg font-medium">Soil Type:</label>
       <select id="soil-type" class="p-2 rounded-md bg-gray-800 text-white border border-gray-600">
-        <option value="Sandy">Sandy</option>
+        <option value="Black">Black</option>
+        <option value="Clayey">Clayey</option>
         <option value="Loamy">Loamy</option>
-        <option value="Clay">Clay</option>
-        <option value="Peaty">Peaty</option>
-        <option value="Silty">Silty</option>
-        <option value="Chalky">Chalky</option>
+        <option value="Red">Red</option>
+        <option value="Sandy">Sandy</option>
       </select>
     </div>
     <div>
       <label for="crop-type" class="text-white mr-2 text-lg font-medium">Crop Type:</label>
       <select id="crop-type" class="p-2 rounded-md bg-gray-800 text-white border border-gray-600">
+        <option value="Barley">Barley</option>
+        <option value="Cotton">Cotton</option>
+        <option value="Ground Nuts">Ground Nuts</option>
+        <option value="Maize">Maize</option>
+        <option value="Millets">Millets</option>
+        <option value="Oil seeds">Oil seeds</option>
+        <option value="Paddy">Paddy</option>
+        <option value="Pulses">Pulses</option>
+        <option value="Sugarcane">Sugarcane</option>
+        <option value="Tobacco">Tobacco</option>
         <option value="Wheat">Wheat</option>
-        <option value="Rice">Rice</option>
-        <option value="Corn">Corn</option>
-        <option value="Soybean">Soybean</option>
-        <option value="Potato">Potato</option>
-        <option value="Tomato">Tomato</option>
       </select>
     </div>
   </div>
 
   <!-- Sensor Cards -->
-  <div id="sensor-cards" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-    <div class="bg-gray-800 p-4 rounded-lg shadow-md text-center">
-      <h2 class="text-lg font-semibold text-gray-500">Temperature (°C)</h2>
-      <p id="temperature" class="text-4xl font-bold text-red-500 mb-2">--</p>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="bg-gray-900 p-4 rounded-lg shadow-lg">
+      <h2 class="text-lg font-semibold text-white mb-2">Temperature (°C)</h2>
+      <p id="temperature" class="text-4xl font-bold text-red-400">--</p>
       <div id="temperature-chart"></div>
     </div>
-    <div class="bg-gray-800 p-4 rounded-lg shadow-md text-center">
-      <h2 class="text-lg font-semibold text-gray-500">Humidity (%)</h2>
-      <p id="humidity" class="text-4xl font-bold text-blue-500 mb-2">--</p>
+    <div class="bg-gray-900 p-4 rounded-lg shadow-lg">
+      <h2 class="text-lg font-semibold text-white mb-2">Humidity (%)</h2>
+      <p id="humidity" class="text-4xl font-bold text-blue-400">--</p>
       <div id="humidity-chart"></div>
     </div>
-    <div class="bg-gray-800 p-4 rounded-lg shadow-md text-center">
-      <h2 class="text-lg font-semibold text-gray-500">Soil Moisture (%)</h2>
-      <p id="moisture" class="text-4xl font-bold text-green-500 mb-2">--</p>
+    <div class="bg-gray-900 p-4 rounded-lg shadow-lg">
+      <h2 class="text-lg font-semibold text-white mb-2">Soil Moisture (%)</h2>
+      <p id="moisture" class="text-4xl font-bold text-green-400">--</p>
       <div id="moisture-chart"></div>
     </div>
-    <div class="bg-gray-800 p-4 rounded-lg shadow-md text-center">
-      <h2 class="text-lg font-semibold text-gray-500">Nitrogen (%)</h2>
-      <p id="nitrogen" class="text-4xl font-bold text-blue-500 mb-2">--</p>
+    <div class="bg-gray-900 p-4 rounded-lg shadow-lg">
+      <h2 class="text-lg font-semibold text-white mb-2">Nitrogen (%)</h2>
+      <p id="nitrogen" class="text-4xl font-bold text-blue-400">--</p>
       <div id="nitrogen-chart"></div>
     </div>
-    <div class="bg-gray-800 p-4 rounded-lg shadow-md text-center">
-      <h2 class="text-lg font-semibold text-gray-500">Phosphorus (%)</h2>
-      <p id="phosphorus" class="text-4xl font-bold text-blue-500 mb-2">--</p>
+    <div class="bg-gray-900 p-4 rounded-lg shadow-lg">
+      <h2 class="text-lg font-semibold text-white mb-2">Phosphorus (%)</h2>
+      <p id="phosphorus" class="text-4xl font-bold text-blue-400">--</p>
       <div id="phosphorus-chart"></div>
     </div>
-    <div class="bg-gray-800 p-4 rounded-lg shadow-md text-center">
-      <h2 class="text-lg font-semibold text-gray-500">Potassium (%)</h2>
-      <p id="potassium" class="text-4xl font-bold text-blue-500 mb-2">--</p>
+    <div class="bg-gray-900 p-4 rounded-lg shadow-lg">
+      <h2 class="text-lg font-semibold text-white mb-2">Potassium (%)</h2>
+      <p id="potassium" class="text-4xl font-bold text-blue-400">--</p>
       <div id="potassium-chart"></div>
     </div>
   </div>
@@ -83,72 +87,14 @@
   <!-- Result Display -->
   <p id="fertilizer-result" class="text-xl text-green-400 mt-6 text-center"></p>
 
-  <!-- JS Logic -->
   <script>
-    const btn = document.getElementById("recommendBtn");
-    const loaderGif = document.getElementById("loaderGif");
-    const btnText = document.getElementById("btnText");
-
-    btn.addEventListener("click", async () => {
-      btn.disabled = true;
-      loaderGif.classList.remove("hidden");
-      btnText.classList.add("hidden");
-
-      const temperature = parseFloat(document.getElementById("temperature").textContent);
-      const humidity = parseFloat(document.getElementById("humidity").textContent);
-      const moisture = parseFloat(document.getElementById("moisture").textContent);
-      const nitrogen = parseFloat(document.getElementById("nitrogen").textContent);
-      const phosphorus = parseFloat(document.getElementById("phosphorus").textContent);
-      const potassium = parseFloat(document.getElementById("potassium").textContent);
-      const soilType = document.getElementById("soil-type").value;
-      const cropType = document.getElementById("crop-type").value;
-
-      try {
-        const response = await fetch("http://127.0.0.1:8000/predict", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            temperature,
-            humidity,
-            moisture,
-            soil_type: soilType,
-            crop_type: cropType,
-            nitrogen,
-            potassium,
-            phosphorous: phosphorus
-          })
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error("API error:", errorText);
-          throw new Error("API returned non-200 status");
-        }
-
-        const result = await response.json();
-        document.getElementById("fertilizer-result").textContent = `🌱 Recommended Fertilizer: ${result.recommended_fertilizer}`;
-        loaderGif.classList.add("hidden");
-        btnText.classList.remove("hidden");
-        btnText.textContent = "Recommended!";
-        btn.classList.remove("bg-blue-600");
-        btn.classList.add("bg-green-600");
-        btn.disabled = true;
-      } catch (error) {
-        console.error("Error:", error);
-        alert("❌ Failed to get recommendation. Please try again.");
-        loaderGif.classList.add("hidden");
-        btnText.classList.remove("hidden");
-        btn.disabled = false;
-      }
-    });
-
-    // Firebase Config
+    // Firebase Setup
     const firebaseConfig = {
       apiKey: "AIzaSyDBO34dEU5kPKpLByTa0uCgqaOQaZK3i2M",
       authDomain: "iot-project-64bf3.firebaseapp.com",
       databaseURL: "https://iot-project-64bf3-default-rtdb.firebaseio.com",
       projectId: "iot-project-64bf3",
-      storageBucket: "iot-project-64bf3.firebasestorage.app",
+      storageBucket: "iot-project-64bf3.appspot.com",
       messagingSenderId: "396893046939",
       appId: "1:396893046939:web:ea98300b7fc8f1f3451e3e"
     };
@@ -156,10 +102,19 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const tempData = [], humidityData = [], moistureData = [], Nitrogen = [], Potassium = [], Phosphorus = [];
+    const sensorData = {
+      temperature: [],
+      humidity: [],
+      moisture: [],
+      nitrogen: [],
+      phosphorus: [],
+      potassium: []
+    };
 
-    function createChart(id, color, dataArray) {
-      return new ApexCharts(document.querySelector(id), {
+    const charts = {};
+
+    function createChart(id, color, dataKey) {
+      const chart = new ApexCharts(document.querySelector(`#${id}`), {
         chart: {
           type: 'area',
           height: 100,
@@ -174,50 +129,90 @@
         },
         tooltip: { enabled: false },
         colors: [color],
-        series: [{ data: dataArray }]
+        series: [{ data: sensorData[dataKey] }]
       });
+      chart.render();
+      charts[dataKey] = chart;
     }
 
-    const charts = {
-      temperature: createChart("#temperature-chart", "#EF4444", tempData),
-      humidity: createChart("#humidity-chart", "#3B82F6", humidityData),
-      moisture: createChart("#moisture-chart", "#10B981", moistureData),
-      nitrogen: createChart("#nitrogen-chart", "#03fca5", Nitrogen),
-      phosphorus: createChart("#phosphorus-chart", "#10B981", Phosphorus),
-      potassium: createChart("#potassium-chart", "#10B981", Potassium)
-    };
-
-    Object.values(charts).forEach(chart => chart.render());
-
-    function debounce(fn, delay) {
-      let timer;
-      return function (...args) {
-        clearTimeout(timer);
-        timer = setTimeout(() => fn.apply(this, args), delay);
-      };
-    }
-
-    function listen(path, elementId, dataArray, chartKey) {
-      const updateUI = debounce((val) => {
-        if (val === null) return;
-        document.getElementById(elementId).textContent = val;
-        dataArray.push(val);
-        if (dataArray.length > 20) dataArray.shift();
-        charts[chartKey].updateSeries([{ data: dataArray }]);
-      }, 500);
-
+    function listen(path, id) {
       db.ref(path).on("value", snapshot => {
-        const val = snapshot.val();
-        updateUI(val);
+        const val = parseFloat(snapshot.val());
+        if (!isNaN(val)) {
+          document.getElementById(id).textContent = val;
+          const arr = sensorData[id];
+          arr.push(val);
+          if (arr.length > 20) arr.shift();
+          charts[id].updateSeries([{ data: arr }]);
+        }
       });
     }
 
-    listen("/iot/temperature", "temperature", tempData, "temperature");
-    listen("/iot/humidity", "humidity", humidityData, "humidity");
-    listen("/iot/moisture", "moisture", moistureData, "moisture");
-    listen("/iot/nitrogen", "nitrogen", Nitrogen, "nitrogen");
-    listen("/iot/phosphorus", "phosphorus", Phosphorus, "phosphorus");
-    listen("/iot/potassium", "potassium", Potassium, "potassium");
+    createChart("temperature-chart", "red", "temperature");
+    createChart("humidity-chart", "blue", "humidity");
+    createChart("moisture-chart", "green", "moisture");
+    createChart("nitrogen-chart", "yellow", "nitrogen");
+    createChart("phosphorus-chart", "purple", "phosphorus");
+    createChart("potassium-chart", "orange", "potassium");
+
+    listen("/iot/temperature", "temperature");
+    listen("/iot/humidity", "humidity");
+    listen("/iot/moisture", "moisture");
+    listen("/iot/nitrogen", "nitrogen");
+    listen("/iot/phosphorus", "phosphorus");
+    listen("/iot/potassium", "potassium");
+
+    const btn = document.getElementById("recommendBtn");
+    const loaderGif = document.getElementById("loaderGif");
+    const btnText = document.getElementById("btnText");
+    const fertilizerResult = document.getElementById("fertilizer-result");
+
+    btn.addEventListener("click", async () => {
+      btn.disabled = true;
+      loaderGif.classList.remove("hidden");
+      btnText.classList.add("hidden");
+
+      const payload = {
+        temperature: parseFloat(document.getElementById("temperature").textContent),
+        humidity: parseFloat(document.getElementById("humidity").textContent),
+        moisture: parseFloat(document.getElementById("moisture").textContent),
+        nitrogen: parseFloat(document.getElementById("nitrogen").textContent),
+        phosphorous: parseFloat(document.getElementById("phosphorus").textContent),
+        potassium: parseFloat(document.getElementById("potassium").textContent),
+        soil_type: document.getElementById("soil-type").value,
+        crop_type: document.getElementById("crop-type").value,
+      };
+
+      try {
+        const res = await fetch("http://127.0.0.1:8000/predict", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) throw new Error(await res.text());
+
+        const result = await res.json();
+        fertilizerResult.textContent = `🌱 Recommended Fertilizer: ${result.recommended_fertilizer}`;
+        btnText.textContent = "Recommended!";
+        btn.classList.replace("bg-blue-600", "bg-green-600");
+
+        // Show result for 60 seconds
+        setTimeout(() => {
+          fertilizerResult.textContent = '';
+          btnText.textContent = "Get Recommendation";
+          btn.classList.replace("bg-green-600", "bg-blue-600");
+        }, 60000);
+
+      } catch (error) {
+        alert("❌ Failed to get recommendation. Try again.");
+        console.error(error);
+      } finally {
+        loaderGif.classList.add("hidden");
+        btnText.classList.remove("hidden");
+        btn.disabled = false;
+      }
+    });
   </script>
 </body>
 </html>

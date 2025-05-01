@@ -5,22 +5,53 @@ import joblib
 import json
 from datetime import datetime
 
+# Initialize FastAPI app
 app = FastAPI()
 
-# Add CORS middleware to allow requests from your frontend
+# Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins. For production, specify allowed origins.
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],  # Allows all HTTP methods
-    allow_headers=["*"],  # Allows all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-# Load model and encoders
-model = joblib.load("fertilizer_model.pkl")
-soil_encoder = joblib.load("soil_encoder.pkl")
-crop_encoder = joblib.load("crop_encoder.pkl")
-fertilizer_encoder = joblib.load("fertilizer_encoder.pkl")
+# Load model
+model = joblib.load("classifier.pkl")
+
+# Encodings (must match training)
+soil_type_mapping = {
+    "black": 0,
+    "clayey": 1,
+    "loamy": 2,
+    "red": 3,
+    "sandy": 4
+}
+
+crop_type_mapping = {
+    "barley": 0,
+    "cotton": 1,
+    "ground nuts": 2,
+    "maize": 3,
+    "millets": 4,
+    "oil seeds": 5,
+    "paddy": 6,
+    "pulses": 7,
+    "sugarcane": 8,
+    "tobacco": 9,
+    "wheat": 10
+}
+
+fertilizer_mapping = {
+    0: "10-26-26",
+    1: "14-35-14",
+    2: "17-17-17",
+    3: "20-20",
+    4: "28-28",
+    5: "DAP",
+    6: "Urea"
+}
 
 # Request schema
 class FertilizerRequest(BaseModel):
@@ -33,14 +64,17 @@ class FertilizerRequest(BaseModel):
     phosphorous: float
     potassium: float
 
+# Prediction endpoint
 @app.post("/predict")
 def predict(data: FertilizerRequest):
     try:
-        # Encode soil and crop types
-        soil_encoded = soil_encoder.transform([data.soil_type])[0]
-        crop_encoded = crop_encoder.transform([data.crop_type])[0]
+        # Encode categorical inputs
+        soil_encoded = soil_type_mapping.get(data.soil_type.lower())
+        crop_encoded = crop_type_mapping.get(data.crop_type.lower())
 
-        # Build feature array
+        if soil_encoded is None or crop_encoded is None:
+            raise ValueError("Invalid soil or crop type")
+
         features = [[
             data.temperature,
             data.humidity,
@@ -52,21 +86,21 @@ def predict(data: FertilizerRequest):
             data.phosphorous
         ]]
 
-        # Predict
-        prediction_encoded = model.predict(features)[0]
-        prediction_label = fertilizer_encoder.inverse_transform([prediction_encoded])[0]
+        # Get prediction and map to label
+        prediction = model.predict(features)[0]
+        fertilizer_name = fertilizer_mapping.get(int(prediction), "Unknown")
 
-        # Store the recommendation with timestamp
+        # Prepare and save log
         recommendation = {
-            "recommended_fertilizer": prediction_label,
+            "recommended_fertilizer": fertilizer_name,
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
 
-        # Write the recommendation to a local file
         with open("recommendations_log.json", "a") as log_file:
-            log_file.write(json.dumps(recommendation) + "\n")
+            json.dump(recommendation, log_file)
+            log_file.write("\n")
 
-        return { "recommended_fertilizer": prediction_label, "timestamp": recommendation["timestamp"] }
+        return recommendation
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

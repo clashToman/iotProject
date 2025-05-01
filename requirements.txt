@@ -1,3 +1,4 @@
+fastapi
 matplotlib
 pandas
 numpy
