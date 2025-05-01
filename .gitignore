@@ -1,2 +1,4 @@
 .Venv/
 __pycache__/
+v.py/
+.idea
